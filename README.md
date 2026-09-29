@@ -14,7 +14,7 @@ The HTML uses relative asset URLs, so it works under the `/mavee/` project path.
 ## Before taking real orders
 
 - Replace the sample menu and prices in `app.js` with Mavee's approved menu.
-- Verify the WhatsApp number in `app.js` (`WHATSAPP_NUMBER`) is Mavee's business number by sending a test order from a phone. The review step opens WhatsApp with the order prefilled; the customer still has to press Send.
+- `WHATSAPP_NUMBER` in `app.js` currently points at a test phone. Swap it to Mavee's verified business number (digits only, international format) and send a test order from a phone. The review step opens WhatsApp with the order prefilled; the customer still has to press Send.
 - Add any named blocks to `NAMED_BLOCKS` in `app.js`. Block numbers are always accepted.
 - Confirm operating days, pickup hours, the final order slot, preparation lead time, and accepted payment methods.
 - Test R30 delivery minimum, address details, and the complete order message on a phone.

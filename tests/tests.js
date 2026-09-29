@@ -145,7 +145,7 @@ test('review offers a WhatsApp link to the café number with the order prefilled
   await addLatte(); await review({});
   const a = $('#placeOrder');
   assert(a && a.tagName === 'A', 'place order should be a link');
-  assert(a.href.startsWith('https://wa.me/27622005401?text='), `href was ${a.href}`);
+  assert(/^https:\/\/wa\.me\/27\d{9}\?text=/.test(a.href), `href should target a South African number in international format, was ${a.href}`);
   const text = decodeURIComponent(a.href.split('text=')[1]);
   assert(/MV-[A-Z0-9]{4}/.test(text), 'message should carry an order reference');
   assert(text.includes('Café latte') && text.includes('request'), 'message should list items and say it is a request');

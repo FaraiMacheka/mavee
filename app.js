@@ -9,7 +9,7 @@ const menu = [
   {id:'cheese',name:'Toasted cheese sandwich',description:'Golden toasted bread with melted cheese.',price:48,category:'Food'},
   {id:'muffin',name:'Fresh muffin',description:'A little something to go with your coffee.',price:35,category:'Food'}
 ];
-const WHATSAPP_NUMBER = '27622005401'; // Mavee's business WhatsApp, international format, digits only. Not yet verified.
+const WHATSAPP_NUMBER = '27696935713'; // TEST number for now. Swap to Mavee's business WhatsApp (international format, digits only) once verified: 27622005401.
 const NAMED_BLOCKS = []; // Blocks known by a name instead of a number, e.g. ['Reception building']. Numbers are always accepted.
 const cart = new Map();
 let category='All';
