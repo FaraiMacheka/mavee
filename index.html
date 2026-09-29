@@ -54,7 +54,7 @@
           </div>
           <div id="deliveryFields">
             <div class="field-grid">
-              <label>Block<input name="block" placeholder="e.g. Block C"></label>
+              <label>Block number<input name="block" inputmode="numeric" placeholder="e.g. 3"></label>
               <label>Floor<input name="floor" placeholder="e.g. First floor"></label>
             </div>
             <label>Company<input name="company" placeholder="Company or office name"></label>
@@ -72,11 +72,22 @@
   <div class="modal-backdrop" id="reviewModal">
     <section class="modal" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
       <button class="close-button" id="closeReview" type="button" aria-label="Close review">×</button>
-      <p class="eyebrow">Almost there</p><h2 id="reviewTitle">Review your order</h2>
-      <div class="review-content" id="reviewContent"></div>
-      <p class="prototype-note">This is a private prototype. Orders are not sent yet; Mavee’s WhatsApp number still needs to be connected.</p>
-      <div class="modal-actions"><button id="copyOrder" class="primary-button" type="button">Copy order details</button><button id="editOrder" class="secondary-button" type="button">Edit order</button></div>
-      <p class="copy-status" id="copyStatus" role="status"></p>
+      <div class="review-only">
+        <p class="eyebrow">Almost there</p><h2 id="reviewTitle">Review your order request</h2>
+        <div class="review-content" id="reviewContent"></div>
+        <p class="prototype-note">Prototype for review: menu items and prices are samples, and Mavee’s WhatsApp number is still being verified.</p>
+        <div class="modal-actions"><a id="placeOrder" class="primary-button" href="#" target="_blank" rel="noopener">Place order on WhatsApp</a><button id="editOrder" class="secondary-button" type="button">Edit order</button></div>
+        <p class="handoff-note">WhatsApp opens with this message filled in. Your order is placed only once you press Send there, and Mavee confirms by reply.</p>
+        <button id="copyOrder" class="link-button" type="button">Copy order details instead</button>
+        <p class="copy-status" id="copyStatus" role="status"></p>
+      </div>
+      <div class="sent-only">
+        <p class="eyebrow">One more tap</p><h2 id="sentTitle">Your order request is in WhatsApp</h2>
+        <p class="sent-copy">It is placed only once you press Send in WhatsApp. Mavee will confirm your order and time by reply. Your reference is <strong id="sentRef"></strong>.</p>
+        <p class="sent-copy">Need to change something? Send an updated message before Mavee replies that she is preparing it. After that, changes are up to her.</p>
+        <div class="modal-actions"><a id="openAgain" class="primary-button" href="#" target="_blank" rel="noopener">Open WhatsApp again</a><button id="changeOrder" class="secondary-button" type="button">Change this order</button></div>
+        <button id="newOrder" class="link-button" type="button">Start a new order</button>
+      </div>
     </section>
   </div>
   <footer class="shell footer">Mavee Café · Fancourt Office Park, Northriding <span>Menu and availability shown for prototype review.</span></footer>

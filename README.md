@@ -1,6 +1,6 @@
 # Mavee Café — Fancourt ordering prototype
 
-A static, mobile-friendly GitHub Pages prototype. It is **not a live ordering system**: menu items and prices are examples, and no order is sent to Mavee yet. The review screen states this clearly.
+A static, mobile-friendly GitHub Pages prototype. It is **not yet a live ordering system**: menu items and prices are examples and the WhatsApp number is unverified. Orders are handed to WhatsApp as a prefilled message; nothing is placed until the customer presses Send and Mavee confirms by reply. The review screen states this clearly.
 
 ## Publish with GitHub Pages
 
@@ -14,7 +14,8 @@ The HTML uses relative asset URLs, so it works under the `/mavee/` project path.
 ## Before taking real orders
 
 - Replace the sample menu and prices in `app.js` with Mavee's approved menu.
-- Add Mavee's verified business WhatsApp number and implement the WhatsApp send handoff. The currently declared empty number is not used; the review step copies text only.
+- Verify the WhatsApp number in `app.js` (`WHATSAPP_NUMBER`) is Mavee's business number by sending a test order from a phone. The review step opens WhatsApp with the order prefilled; the customer still has to press Send.
+- Add any named blocks to `NAMED_BLOCKS` in `app.js`. Block numbers are always accepted.
 - Confirm operating days, pickup hours, the final order slot, preparation lead time, and accepted payment methods.
 - Test R30 delivery minimum, address details, and the complete order message on a phone.
 - Update the prototype notice only after an order can actually reach Mavee.

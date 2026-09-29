@@ -27,13 +27,13 @@ them before 15:30 SAST. Add a `test(name, width, fn)` entry in `tests/tests.js` 
 ## Mobile step flow
 
 Below 900px the page is a three-step flow driven by `document.body.dataset.step` (`menu`, `details`,
-`review`) and mirrored in the URL hash so the phone back button works. `setStep()` in `app.js` is the
+`review`, `sent`) and mirrored in the URL hash so the phone back button works. `setStep()` in `app.js` is the
 only place that changes it. CSS in the 900px media query hides the sections that do not belong to
 the current step. On desktop all sections stay visible and the review is an overlay.
 
 `SPEC.md` is the MVP specification and the source of truth for scope and business rules. Read it in
-full before changing behaviour. Configuration lives at the top of `app.js` (WhatsApp number, sample
-menu). See `README.md` for the launch checklist.
+full before changing behaviour. Configuration lives at the top of `app.js`: the sample menu, `WHATSAPP_NUMBER`
+(digits only, international format) and `NAMED_BLOCKS`. See `README.md` for the launch checklist.
 
 ## What is being built
 
@@ -59,6 +59,15 @@ in the MVP.
 - **Menu and prices in the prototype are placeholders**, not Mavee's approved offering. Do not
   present the prototype as a live ordering service. Keep the prototype notice until the launch
   checklist in SPEC.md section 8 is complete.
+- **Order lifecycle.** The site never sends anything itself. "Place order on WhatsApp" opens a
+  wa.me link with the message prefilled and moves to a `sent` step whose wording says the order is
+  placed only once the customer presses Send in WhatsApp. Every message carries an order reference
+  (`MV-XXXX`). A change after placing produces an "UPDATED ORDER REQUEST" message with the same
+  reference so Mavee can tell an amendment from a new order. The site cannot lock an order once
+  Mavee starts preparing; that needs a backend and is out of MVP scope.
+- **Validation.** Mobile numbers must normalise to a 10-digit South African mobile (06, 07 or 08
+  prefix; +27 form accepted). Delivery blocks must be a number of up to three digits or an entry in
+  `NAMED_BLOCKS`.
 - **Order message contents** (SPEC.md section 5): items with quantities, line and order totals,
   customer name and mobile, pickup or delivery with block/company/floor, requested time with date
   and SAST timezone, optional note, payment on handover, and wording that marks it as a request

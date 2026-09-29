@@ -9,18 +9,21 @@ const menu = [
   {id:'cheese',name:'Toasted cheese sandwich',description:'Golden toasted bread with melted cheese.',price:48,category:'Food'},
   {id:'muffin',name:'Fresh muffin',description:'A little something to go with your coffee.',price:35,category:'Food'}
 ];
-const WHATSAPP_NUMBER = ''; // Add Mavee's international-format business number before taking orders.
+const WHATSAPP_NUMBER = '27622005401'; // Mavee's business WhatsApp, international format, digits only. Not yet verified.
+const NAMED_BLOCKS = []; // Blocks known by a name instead of a number, e.g. ['Reception building']. Numbers are always accepted.
 const cart = new Map();
 let category='All';
 let fulfilment='delivery';
 let orderText='';
+let orderRef='';
+let orderPlaced=false;
 const STEPS=['menu','details','review'];
 function setStep(step,updateHash=true){
   document.body.dataset.step=step;
   if(updateHash){const hash=step==='menu'?'':'#'+step;if(location.hash!==hash){if(hash)location.hash=hash;else history.pushState('', '', location.pathname+location.search);}}
   if(step!=='review')window.scrollTo({top:0});
 }
-function stepFromHash(){const s=location.hash.slice(1);if(s==='review'&&orderText)return 'review';return s==='details'||(s==='review'&&cart.size)?'details':'menu';}
+function stepFromHash(){const s=location.hash.slice(1);if(s==='sent'&&orderPlaced)return 'sent';if((s==='review'||s==='sent')&&orderText)return 'review';return s==='details'||(s==='review'&&cart.size)?'details':'menu';}
 window.addEventListener('hashchange',()=>{const s=stepFromHash();if(s!==document.body.dataset.step)setStep(s,false);});
 window.addEventListener('popstate',()=>{const s=stepFromHash();if(s!==document.body.dataset.step)setStep(s,false);});
 const $=id=>document.getElementById(id);
@@ -49,12 +52,19 @@ function timeOptions(){
   $('timeSelect').innerHTML=html;
   if(html==='<option value="">Choose a time</option>') $('timeSelect').innerHTML='<option value="">No delivery or collection times left today</option>';
 }
+function normalisePhone(raw){const digits=raw.replace(/\D/g,'');const local=digits.length===11&&digits.startsWith('27')?'0'+digits.slice(2):digits;return /^0[678]\d{8}$/.test(local)?local:null;}
+function validBlock(raw){const v=raw.trim();return /^\d{1,3}$/.test(v)||NAMED_BLOCKS.some(b=>b.toLowerCase()===v.toLowerCase());}
+function blockLabel(raw){const v=raw.trim();return /^\d{1,3}$/.test(v)?'Block '+v:v;}
+function newRef(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let ref='MV-';for(let i=0;i<4;i++)ref+=chars[Math.floor(Math.random()*chars.length)];return ref;}
+function dateLabel(){return new Intl.DateTimeFormat('en-ZA',{timeZone:'Africa/Johannesburg',weekday:'short',day:'numeric',month:'short'}).format(new Date());}
+function whatsappLink(text){return 'https://wa.me/'+WHATSAPP_NUMBER+'?text='+encodeURIComponent(text);}
 function textValue(form,key){return String(new FormData(form).get(key)||'').trim();}
 function createOrderText(form){
-  const name=textValue(form,'name'),phone=textValue(form,'phone'),time=textValue(form,'time');
+  const name=textValue(form,'name'),phone=normalisePhone(textValue(form,'phone'))||textValue(form,'phone'),time=textValue(form,'time');
   const lines=[...cart].map(([id,qty])=>{const item=menu.find(i=>i.id===id);return `${qty} × ${item.name} — ${money(item.price*qty)}`});
-  const destination=fulfilment==='delivery'?`Deliver to: ${textValue(form,'block')}, ${textValue(form,'company')}, ${textValue(form,'floor')}`:'Collection at Mavee';
-  return ['MAVEE CAFÉ ORDER',...lines,'',`Total: ${money(subtotal())}`,`For: ${name}`,`Mobile: ${phone}`,destination,`Preferred time today: ${time} (SAST)`,'Payment: on delivery/collection',textValue(form,'note')?`Note: ${textValue(form,'note')}`:''].filter(Boolean).join('\n');
+  const destination=fulfilment==='delivery'?`Deliver to: ${blockLabel(textValue(form,'block'))}, ${textValue(form,'company')}, ${textValue(form,'floor')}`:'Collection at Mavee';
+  const header=orderPlaced?`UPDATED ORDER REQUEST ${orderRef} (replaces my earlier message)`:`MAVEE CAFÉ ORDER REQUEST ${orderRef}`;
+  return [header,...lines,'',`Total: ${money(subtotal())}`,`For: ${name}`,`Mobile: ${phone}`,destination,`Preferred time: ${dateLabel()} ${time} (SAST)`,'Payment: on delivery/collection',textValue(form,'note')?`Note: ${textValue(form,'note')}`:'','','This is an order request awaiting your confirmation. Thank you!'].filter((line,i,arr)=>line||arr[i-1]).join('\n');
 }
 document.addEventListener('click',e=>{
   const add=e.target.closest('[data-add]');if(add){cart.set(add.dataset.add,(cart.get(add.dataset.add)||0)+1);renderCart();}
@@ -71,17 +81,24 @@ $('orderForm').addEventListener('submit',e=>{
   if(!cart.size){$('formError').textContent='Add at least one item to your order.';return;}
   if(fulfilment==='delivery'&&subtotal()<30){$('formError').textContent='Office delivery requires a minimum order of R30.';return;}
   for(const field of ['name','phone','time',...(fulfilment==='delivery'?['block','company','floor']:[])])if(!textValue(form,field)){$('formError').textContent='Please complete your name, mobile number, preferred time and delivery location.';form.elements[field].focus();return;}
+  if(!normalisePhone(textValue(form,'phone'))){$('formError').textContent='Enter a 10-digit South African mobile number, e.g. 071 234 5678.';form.elements.phone.focus();return;}
+  if(fulfilment==='delivery'&&!validBlock(textValue(form,'block'))){$('formError').textContent='Enter your block number (digits only), e.g. 3.';form.elements.block.focus();return;}
   const chosenTime=textValue(form,'time');timeOptions();
   if(![...$('timeSelect').options].some(option=>option.value===chosenTime)){$('formError').textContent='That time is no longer available. Please choose another.';return;}
   $('timeSelect').value=chosenTime;
+  if(!orderRef)orderRef=newRef();
   orderText=createOrderText(form);$('reviewContent').textContent=orderText;$('copyStatus').textContent='';
+  $('placeOrder').href=whatsappLink(orderText);
   setStep('review');$('closeReview').focus();
 });
 function closeModal(){setStep('details');$('reviewButton').focus();}
 $('closeReview').addEventListener('click',closeModal);$('editOrder').addEventListener('click',closeModal);
 $('reviewModal').addEventListener('click',e=>{if(e.target===$('reviewModal'))closeModal()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.dataset.step==='review')closeModal()});
-$('copyOrder').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(orderText);$('copyStatus').textContent='Order details copied. This has not sent an order to Mavee.';}catch{$('copyStatus').textContent='Copy failed. You can select the order details above.';}});
+$('placeOrder').addEventListener('click',()=>{orderPlaced=true;$('openAgain').href=$('placeOrder').href;$('sentRef').textContent=orderRef;setStep('sent');});
+$('changeOrder').addEventListener('click',()=>setStep('details'));
+$('newOrder').addEventListener('click',()=>{cart.clear();orderRef='';orderPlaced=false;orderText='';$('orderForm').elements.note.value='';renderCart();setStep('menu');});
+$('copyOrder').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(orderText);$('copyStatus').textContent='Order details copied. Paste them into WhatsApp to Mavee; copying has not sent anything.';}catch{$('copyStatus').textContent='Copy failed. You can select the order details above.';}});
 setStep(stepFromHash(),false);renderMenu();renderCart();timeOptions();
 if(document.modelContext?.registerTool){
   const lifecycle=new AbortController();
