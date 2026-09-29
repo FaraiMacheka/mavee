@@ -14,6 +14,15 @@ const cart = new Map();
 let category='All';
 let fulfilment='delivery';
 let orderText='';
+const STEPS=['menu','details','review'];
+function setStep(step,updateHash=true){
+  document.body.dataset.step=step;
+  if(updateHash){const hash=step==='menu'?'':'#'+step;if(location.hash!==hash){if(hash)location.hash=hash;else history.pushState('', '', location.pathname+location.search);}}
+  if(step!=='review')window.scrollTo({top:0});
+}
+function stepFromHash(){const s=location.hash.slice(1);if(s==='review'&&orderText)return 'review';return s==='details'||(s==='review'&&cart.size)?'details':'menu';}
+window.addEventListener('hashchange',()=>{const s=stepFromHash();if(s!==document.body.dataset.step)setStep(s,false);});
+window.addEventListener('popstate',()=>{const s=stepFromHash();if(s!==document.body.dataset.step)setStep(s,false);});
 const $=id=>document.getElementById(id);
 const money=n=>'R'+n.toFixed(2);
 const subtotal=()=>[...cart].reduce((sum,[id,qty])=>sum+menu.find(item=>item.id===id).price*qty,0);
@@ -28,6 +37,8 @@ function renderCart(){
   const total=subtotal();$('subtotal').textContent=money(total);
   $('minimumNote').textContent=fulfilment==='delivery'&&total<30?`Add ${money(30-total)} more for office delivery (R30 minimum order).`:'';
   $('deliveryFields').hidden=fulfilment==='pickup';
+  $('stepSummary').textContent=count+' '+(count===1?'item':'items')+' · '+money(total);
+  $('nextStep').disabled=!count;
 }
 function timeOptions(){
   const formatter=new Intl.DateTimeFormat('en-GB',{timeZone:'Africa/Johannesburg',hour:'2-digit',minute:'2-digit',hour12:false});
@@ -51,7 +62,9 @@ document.addEventListener('click',e=>{
   const tab=e.target.closest('[data-category]');if(tab){category=tab.dataset.category;renderMenu();}
 });
 document.querySelectorAll('[name=fulfilment]').forEach(input=>input.addEventListener('change',()=>{fulfilment=input.value;renderCart();}));
-$('cartJump').addEventListener('click',()=>$('orderPanel').scrollIntoView({behavior:'smooth'}));
+$('cartJump').addEventListener('click',()=>{setStep('details');$('orderPanel').scrollIntoView({behavior:'smooth'});});
+$('nextStep').addEventListener('click',()=>{if(cart.size)setStep('details');});
+$('backStep').addEventListener('click',()=>setStep('menu'));
 $('orderForm').addEventListener('submit',e=>{
   e.preventDefault();$('formError').textContent='';
   const form=e.currentTarget;
@@ -62,14 +75,14 @@ $('orderForm').addEventListener('submit',e=>{
   if(![...$('timeSelect').options].some(option=>option.value===chosenTime)){$('formError').textContent='That time is no longer available. Please choose another.';return;}
   $('timeSelect').value=chosenTime;
   orderText=createOrderText(form);$('reviewContent').textContent=orderText;$('copyStatus').textContent='';
-  $('reviewModal').hidden=false;$('closeReview').focus();
+  setStep('review');$('closeReview').focus();
 });
-function closeModal(){$('reviewModal').hidden=true;$('reviewButton').focus();}
+function closeModal(){setStep('details');$('reviewButton').focus();}
 $('closeReview').addEventListener('click',closeModal);$('editOrder').addEventListener('click',closeModal);
 $('reviewModal').addEventListener('click',e=>{if(e.target===$('reviewModal'))closeModal()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('reviewModal').hidden)closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.dataset.step==='review')closeModal()});
 $('copyOrder').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(orderText);$('copyStatus').textContent='Order details copied. This has not sent an order to Mavee.';}catch{$('copyStatus').textContent='Copy failed. You can select the order details above.';}});
-renderMenu();renderCart();timeOptions();
+setStep(stepFromHash(),false);renderMenu();renderCart();timeOptions();
 if(document.modelContext?.registerTool){
   const lifecycle=new AbortController();
   try{void Promise.resolve(document.modelContext.registerTool({

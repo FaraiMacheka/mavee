@@ -10,6 +10,27 @@ The site is a static prototype with no build step, package manifest, or test sui
 GitHub Pages from the `main` branch root at https://faraimacheka.github.io/mavee/ , so every push to
 `main` goes live. Asset URLs must stay relative so the `/mavee/` project path keeps working.
 
+## Tests
+
+Browser-run behaviour tests live in `tests/` with no dependencies. Serve the repo root and open the
+test page; results appear in the page and in the tab title as `PASS n/n` or `FAIL n/n`:
+
+```
+python -m http.server 8765
+# then open http://127.0.0.1:8765/tests/
+```
+
+Each test loads `index.html` in a fresh iframe at phone width (390px) or desktop width (1200px), so
+responsive behaviour is covered. Tests that reach the review step need a same-day time slot, so run
+them before 15:30 SAST. Add a `test(name, width, fn)` entry in `tests/tests.js` for new behaviour.
+
+## Mobile step flow
+
+Below 900px the page is a three-step flow driven by `document.body.dataset.step` (`menu`, `details`,
+`review`) and mirrored in the URL hash so the phone back button works. `setStep()` in `app.js` is the
+only place that changes it. CSS in the 900px media query hides the sections that do not belong to
+the current step. On desktop all sections stay visible and the review is an overlay.
+
 `SPEC.md` is the MVP specification and the source of truth for scope and business rules. Read it in
 full before changing behaviour. Configuration lives at the top of `app.js` (WhatsApp number, sample
 menu). See `README.md` for the launch checklist.

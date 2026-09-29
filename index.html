@@ -35,6 +35,7 @@
         <div class="menu-grid" id="menuItems"></div>
       </section>
       <aside class="order-panel" id="orderPanel" aria-labelledby="orderTitle">
+        <button type="button" class="back-link" id="backStep">&larr; Back to menu</button>
         <div class="panel-heading"><div><p class="eyebrow">Your selection</p><h2 id="orderTitle">Your order</h2></div><span id="cartQty" class="cart-qty">0 items</span></div>
         <div id="cartItems" class="cart-items"></div>
         <div class="total-line"><span>Subtotal</span><strong id="subtotal">R0.00</strong></div>
@@ -67,7 +68,8 @@
       </aside>
     </div>
   </main>
-  <div class="modal-backdrop" id="reviewModal" hidden>
+  <div class="step-bar" id="stepBar"><span id="stepSummary" aria-live="polite">0 items · R0.00</span><button type="button" class="primary-button" id="nextStep" disabled>Next</button></div>
+  <div class="modal-backdrop" id="reviewModal">
     <section class="modal" role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
       <button class="close-button" id="closeReview" type="button" aria-label="Close review">×</button>
       <p class="eyebrow">Almost there</p><h2 id="reviewTitle">Review your order</h2>
