@@ -18,6 +18,7 @@ The HTML uses relative asset URLs, so it works under the `/mavee/` project path.
 - Add any named blocks to `NAMED_BLOCKS` in `app.js`. Block numbers are always accepted.
 - Confirm operating days, pickup hours, the final order slot, preparation lead time, and accepted payment methods.
 - Test R30 delivery minimum, address details, and the complete order message on a phone.
+- Confirm the catering enquiry copy with Mavee: event types, notice needed, any minimum, and that enquiries should reach the same WhatsApp number. Send a test enquiry from a phone.
 - Update the prototype notice only after an order can actually reach Mavee.
 
 See `SPEC.md` for requirements and launch checks. GitHub Pages is public on ordinary free accounts; do not include customer contact details or secrets in this repository.

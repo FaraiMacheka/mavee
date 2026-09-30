@@ -99,6 +99,36 @@ $('placeOrder').addEventListener('click',()=>{orderPlaced=true;$('openAgain').hr
 $('changeOrder').addEventListener('click',()=>setStep('details'));
 $('newOrder').addEventListener('click',()=>{cart.clear();orderRef='';orderPlaced=false;orderText='';$('orderForm').elements.note.value='';renderCart();setStep('menu');});
 $('copyOrder').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(orderText);$('copyStatus').textContent='Order details copied. Paste them into WhatsApp to Mavee; copying has not sent anything.';}catch{$('copyStatus').textContent='Copy failed. You can select the order details above.';}});
+// Catering enquiries: a WhatsApp handoff, not an order. Nothing is booked until Mavee confirms by reply.
+let enquiryRef='';
+let enquiryText='';
+let enquiryHanded=false;
+const todayIso=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Johannesburg'}).format(new Date());
+function eventDateLabel(iso){const [y,m,d]=iso.split('-').map(Number);return new Intl.DateTimeFormat('en-ZA',{timeZone:'UTC',weekday:'short',day:'numeric',month:'short',year:'numeric'}).format(new Date(Date.UTC(y,m-1,d)));}
+function createEnquiryText(form){
+  const v=key=>textValue(form,key);
+  const header=enquiryHanded?`UPDATED CATERING ENQUIRY ${enquiryRef} (replaces my earlier message)`:`MAVEE CAFÉ CATERING ENQUIRY ${enquiryRef}`;
+  return [header,`Event: ${v('event')}`,`Date: ${eventDateLabel(v('date'))} (${v('date')}, SAST)`,`Guests: about ${v('guests')}`,`For: ${v('name')}`,`Mobile: ${normalisePhone(v('phone'))}`,v('note')?`Details: ${v('note')}`:'','','This is a catering enquiry, not an order. Please reply with what you can offer and a quote. Thank you!'].filter((line,i,arr)=>line||arr[i-1]).join('\n');
+}
+$('cateringForm').elements.date.min=todayIso();
+$('cateringForm').addEventListener('submit',e=>{
+  e.preventDefault();const form=e.currentTarget,error=$('cateringError');error.textContent='';
+  const fail=(msg,field)=>{error.textContent=msg;$('cateringReview').hidden=true;form.elements[field].focus();};
+  if(!textValue(form,'event'))return fail('Choose the type of event.','event');
+  const date=textValue(form,'date');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date<todayIso())return fail('Choose an event date that is today or later.','date');
+  const guests=textValue(form,'guests');
+  if(!/^\d+$/.test(guests)||Number(guests)<1)return fail('Enter the approximate number of guests (at least 1).','guests');
+  if(!textValue(form,'name'))return fail('Enter your name.','name');
+  if(!normalisePhone(textValue(form,'phone')))return fail('Enter a 10-digit South African mobile number, e.g. 071 234 5678.','phone');
+  if(!enquiryRef)enquiryRef=newRef();
+  enquiryText=createEnquiryText(form);$('cateringText').textContent=enquiryText;$('cateringStatus').textContent='';
+  $('sendEnquiry').href=whatsappLink(enquiryText);$('cateringReview').hidden=false;$('cateringHanded').hidden=true;
+  $('cateringReview').scrollIntoView({behavior:'smooth',block:'nearest'});
+});
+$('sendEnquiry').addEventListener('click',()=>{enquiryHanded=true;$('enquiryAgain').href=$('sendEnquiry').href;$('cateringRef').textContent=enquiryRef;$('cateringHanded').hidden=false;});
+$('copyEnquiry').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(enquiryText);$('cateringStatus').textContent='Enquiry details copied. Paste them into WhatsApp to Mavee; copying has not sent anything.';}catch{$('cateringStatus').textContent='Copy failed. You can select the enquiry details above.';}});
+$('cateringJump').addEventListener('click',e=>{e.preventDefault();$('catering').scrollIntoView({behavior:'smooth'});});
 setStep(stepFromHash(),false);renderMenu();renderCart();timeOptions();
 if(document.modelContext?.registerTool){
   const lifecycle=new AbortController();

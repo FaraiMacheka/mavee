@@ -44,12 +44,17 @@ The published private prototype currently lets a customer build and review an or
 | M08 | Send the order to Mavee's WhatsApp | **No; number pending** | Configure verified business number and test the handoff on a phone |
 | M09 | Payment on handover | Stated | Confirm accepted methods and change |
 | M10 | Staff acknowledge, accept or decline orders | Outside website; via WhatsApp | Agree response procedure, including sold-out items and delays |
+| M11 | Send a catering enquiry (business functions, weddings, special occasions, funerals or memorials) to Mavee's WhatsApp | Yes, enquiry form with event type, date, guests, name, mobile and details | Confirm catering scope, lead time and any minimum with Mavee; no catering prices or packages are shown |
 
 ## 5. Order message
 
 The WhatsApp message should contain: items and quantities; item totals and order total; customer name and mobile; delivery or pickup; block/company/floor for delivery; requested time with date and South Africa timezone; optional note; and payment on handover. It should identify the order as a request awaiting Mavee's confirmation.
 
 The customer must be able to review before leaving the website. Never display a “confirmed” or “placed” state solely because the WhatsApp link was opened. WhatsApp is the order record for this MVP; there is no café dashboard, automatic stock control or online payment in scope.
+
+### Catering enquiry message
+
+Catering is an enquiry, not an order. The section under the menu collects event type (business function, wedding, special occasion, funeral or memorial, other), event date (today or later), approximate guest count, name, mobile and optional details. It offers no menus, packages or prices. The WhatsApp message is headed `MAVEE CAFÉ CATERING ENQUIRY MV-XXXX` and carries the event type, date with SAST, guests, name, normalised mobile and details, and states that it is an enquiry awaiting Mavee's reply and quote. A resubmitted enquiry keeps its reference and is headed `UPDATED CATERING ENQUIRY`. The same rule applies as for orders: the site never claims the enquiry was sent, and nothing is booked until Mavee confirms by reply.
 
 ## 6. Menu and office directory
 
@@ -86,6 +91,7 @@ A short branded redirect can make a printed QR code or message look cleaner, but
 5. Block/company/floor occupant list, when available.
 6. Mavee-owned domain or chosen subdomain and access to someone who can set DNS.
 7. Mavee's preference for a private review invitation versus a later public launch.
+8. Catering scope: which event types Mavee will take on, how much notice she needs, any minimum guest count, and whether catering enquiries should go to the same WhatsApp number as orders.
 
 ## 10. Later enhancements, outside this MVP
 

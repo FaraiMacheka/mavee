@@ -24,6 +24,7 @@
         <h1 id="pageTitle">A little café break, <em>right at Fancourt.</em></h1>
         <p>Choose something you like, then collect it or have it brought to your office in the park.</p>
         <div class="service-note"><span aria-hidden="true">✦</span> Office delivery from R30 · 08:00–before 16:00</div>
+        <p class="intro-link"><a id="cateringJump" href="#catering">Planning an event? Catering enquiries &darr;</a></p>
       </div>
       <img class="intro-image" src="./cafe.png" alt="Toasted sandwich and cappuccino on a café table">
     </section>
@@ -67,6 +68,48 @@
         </form>
       </aside>
     </div>
+
+    <section class="catering" id="catering" aria-labelledby="cateringTitle">
+      <div class="catering-copy">
+        <p class="eyebrow">Catering</p>
+        <h2 id="cateringTitle">Feeding a bigger table?</h2>
+        <p>Mavee caters business functions, weddings, special occasions and funerals or memorials. Tell us a little about the event and Mavee will reply on WhatsApp with what she can offer and a quote.</p>
+        <ul class="catering-list">
+          <li>Business functions, meetings and year-end events</li>
+          <li>Weddings and engagement celebrations</li>
+          <li>Birthdays, baby showers and other special occasions</li>
+          <li>Funerals and memorial gatherings</li>
+        </ul>
+        <p class="catering-note">Catering is arranged directly with Mavee. Menus, pricing and lead times are agreed on WhatsApp, and nothing is booked until she confirms.</p>
+      </div>
+      <form class="catering-form" id="cateringForm" novalidate>
+        <label>Type of event<select name="event" required><option value="">Choose an event</option><option value="Business function">Business function</option><option value="Wedding">Wedding</option><option value="Special occasion">Special occasion</option><option value="Funeral or memorial">Funeral or memorial</option><option value="Other">Other</option></select></label>
+        <div class="field-grid">
+          <label>Event date<input name="date" type="date" required></label>
+          <label>Approximate guests<input name="guests" type="number" inputmode="numeric" min="1" step="1" required placeholder="e.g. 40"></label>
+        </div>
+        <div class="field-grid">
+          <label>Your name<input name="name" autocomplete="name" required placeholder="Name for the enquiry"></label>
+          <label>Mobile number<input name="phone" type="tel" autocomplete="tel" required placeholder="e.g. 071 234 5678"></label>
+        </div>
+        <label>Event details <span class="label-hint">Optional</span><textarea name="note" rows="3" placeholder="Venue, time of day, dietary needs, budget, or anything helpful"></textarea></label>
+        <button type="submit" class="primary-button" id="cateringButton">Send enquiry on WhatsApp</button>
+        <p class="form-error" id="cateringError" role="alert"></p>
+        <div class="catering-review" id="cateringReview" hidden>
+          <p class="eyebrow">Check your enquiry</p>
+          <div class="review-content" id="cateringText"></div>
+          <a id="sendEnquiry" class="primary-button" href="#" target="_blank" rel="noopener">Open WhatsApp with this enquiry</a>
+          <p class="handoff-note">WhatsApp opens with this message filled in. Your enquiry reaches Mavee only once you press Send there, and she replies with what she can offer.</p>
+          <button id="copyEnquiry" class="link-button" type="button">Copy enquiry details instead</button>
+          <p class="copy-status" id="cateringStatus" role="status"></p>
+        </div>
+        <div class="catering-handed" id="cateringHanded" hidden>
+          <p class="eyebrow">One more tap</p>
+          <p class="sent-copy">Your enquiry is in WhatsApp. It reaches Mavee only once you press Send there. Your reference is <strong id="cateringRef"></strong>. She will reply with options and a quote; nothing is booked until she confirms.</p>
+          <a id="enquiryAgain" class="primary-button" href="#" target="_blank" rel="noopener">Open WhatsApp again</a>
+        </div>
+      </form>
+    </section>
   </main>
   <div class="step-bar" id="stepBar"><span id="stepSummary" aria-live="polite">0 items · R0.00</span><button type="button" class="primary-button" id="nextStep" disabled>Next</button></div>
   <div class="modal-backdrop" id="reviewModal">

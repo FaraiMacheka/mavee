@@ -6,6 +6,9 @@ const test = (name, width, fn) => tests.push({ name, width, fn });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const assert = (cond, msg) => { if (!cond) throw new Error(msg); };
 const visible = el => !!el && el.getClientRects().length > 0;
+const isoDate = d => new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Johannesburg' }).format(d);
+const tomorrow = () => isoDate(new Date(Date.now() + 864e5));
+const yesterday = () => isoDate(new Date(Date.now() - 864e5));
 
 async function load(width) {
   const f = document.createElement('iframe');
@@ -28,7 +31,12 @@ async function load(width) {
   // Stop wa.me links navigating the frame; record the href instead.
   const opened = [];
   d.addEventListener('click', e => { const a = e.target.closest('a[href*="wa.me"]'); if (a) { opened.push(a.href); e.preventDefault(); } }, true);
-  return { f, d, w, $, addLatte, fill, review, opened, step: () => d.body.dataset.step, error: () => $('#formError').textContent };
+  const enquire = async (fields) => {
+    const v = Object.assign({ event: 'Wedding', date: tomorrow(), guests: '40', name: 'Test', phone: '071 234 5678', note: '' }, fields);
+    for (const k of Object.keys(v)) d.querySelector(`#cateringForm [name=${k}]`).value = v[k];
+    $('#cateringButton').click(); await sleep(50);
+  };
+  return { f, d, w, $, addLatte, fill, review, enquire, opened, step: () => d.body.dataset.step, error: () => $('#formError').textContent, cateringError: () => $('#cateringError').textContent };
 }
 
 test('phone starts on the menu step with the details panel hidden', PHONE, async () => {
@@ -190,6 +198,66 @@ test('desktop review also has the WhatsApp place order link', DESKTOP, async () 
   const { $, addLatte, review } = await load(DESKTOP);
   await addLatte(); await review({});
   assert(visible($('#placeOrder')), 'place order visible on desktop');
+});
+
+test('desktop shows a catering enquiry section with the four event types', DESKTOP, async () => {
+  const { $, d } = await load(DESKTOP);
+  assert(visible($('#catering')) && visible($('#cateringForm')), 'catering section and form should be visible');
+  const options = [...d.querySelectorAll('#cateringForm [name=event] option')].map(o => o.textContent.toLowerCase()).join(' ');
+  for (const type of ['business function', 'wedding', 'special occasion', 'funeral']) assert(options.includes(type), `event types should include ${type}: ${options}`);
+  assert(!/R\d/.test($('#catering').innerText), 'catering section must not show prices');
+});
+
+test('phone shows catering on the menu step and hides it on details', PHONE, async () => {
+  const { $, addLatte } = await load(PHONE);
+  assert(visible($('#catering')), 'catering visible on the menu step');
+  await addLatte(); $('#nextStep').click(); await sleep(50);
+  assert(!visible($('#catering')), 'catering hidden on the details step');
+});
+
+test('catering enquiry rejects a past event date', PHONE, async () => {
+  const { $, enquire, cateringError } = await load(PHONE);
+  await enquire({ date: yesterday() });
+  assert(/date/i.test(cateringError()), `error was "${cateringError()}"`);
+  assert(!visible($('#sendEnquiry')), 'WhatsApp link should not be offered');
+});
+
+test('catering enquiry rejects a guest count below one', PHONE, async () => {
+  const { enquire, cateringError } = await load(PHONE);
+  await enquire({ guests: '0' });
+  assert(/guest/i.test(cateringError()), `error was "${cateringError()}"`);
+});
+
+test('catering enquiry rejects a mobile number that is not a South African mobile', PHONE, async () => {
+  const { enquire, cateringError } = await load(PHONE);
+  await enquire({ phone: '011 234 5678' });
+  assert(/10-digit/.test(cateringError()), `error was "${cateringError()}"`);
+});
+
+test('valid catering enquiry offers a WhatsApp link with the enquiry prefilled and a reference', DESKTOP, async () => {
+  const { $, enquire, cateringError } = await load(DESKTOP);
+  await enquire({ note: 'Halaal options please' });
+  assert(cateringError() === '', `unexpected error "${cateringError()}"`);
+  const a = $('#sendEnquiry');
+  assert(visible(a) && a.tagName === 'A', 'send enquiry should be a visible link');
+  assert(/^https:\/\/wa\.me\/27\d{9}\?text=/.test(a.href), `href should target the café number, was ${a.href}`);
+  const text = decodeURIComponent(a.href.split('text=')[1]);
+  assert(/CATERING ENQUIRY MV-[A-Z0-9]{4}/.test(text), `message should be headed as a catering enquiry with a reference: ${text.slice(0, 60)}`);
+  assert(/Wedding/.test(text) && /40/.test(text) && text.includes(tomorrow()) && /SAST/.test(text) && /0712345678/.test(text) && /Halaal/.test(text), `message should carry event, date, guests, mobile and note: ${text}`);
+  assert(/enquiry/i.test(text) && /reply|quote/i.test(text), 'message should say it is an enquiry awaiting a reply');
+  assert($('#cateringText').textContent === text, 'on-screen text should match the message');
+});
+
+test('opening the catering WhatsApp link shows the reference and never claims the enquiry was sent', PHONE, async () => {
+  const { $, d, enquire, opened } = await load(PHONE);
+  await enquire({});
+  $('#sendEnquiry').click(); await sleep(50);
+  assert(opened.length === 1, 'WhatsApp link should have been opened once');
+  const t = $('#catering').innerText;
+  assert(/MV-[A-Z0-9]{4}/.test(t) && /press Send/i.test(t), 'should show the reference and tell the customer to press Send');
+  assert(!/enquiry (sent|received|confirmed)/i.test(t.replace(/only once|not/gi, '')), 'must not claim the enquiry is sent');
+  assert(visible($('#enquiryAgain')), 'should offer to open WhatsApp again');
+  assert(d.body.dataset.step === 'menu', 'catering handoff must not change the order step');
 });
 
 (async () => {

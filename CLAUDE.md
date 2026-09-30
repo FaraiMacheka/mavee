@@ -72,6 +72,10 @@ in the MVP.
   customer name and mobile, pickup or delivery with block/company/floor, requested time with date
   and SAST timezone, optional note, payment on handover, and wording that marks it as a request
   awaiting confirmation.
+- **Catering is an enquiry, never an order.** The catering section (SPEC.md section 5) collects event
+  type, date, guests, name, mobile and details and hands off a `CATERING ENQUIRY MV-XXXX` WhatsApp
+  message. Show no catering prices, packages or menus, and never claim the enquiry was sent or the
+  event booked. On phones the section belongs to the `menu` step only.
 
 ## Open inputs from the client
 
